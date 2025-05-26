@@ -1,206 +1,227 @@
-/**
- * Google Apps Script for FAMU Water Quality Website
- * This script should be deployed as a web app to handle data requests
- */
+// script.js
 
-// Replace with your actual Google Sheets ID
-const SHEET_ID = 'YOUR_GOOGLE_SHEETS_ID_HERE';
-const SHEET_NAME = 'Sheet1'; // Replace with your actual sheet name
+document.addEventListener('DOMContentLoaded', function() {
+    const zipCodeInput = document.getElementById('zipCode');
+    const checkButton = document.getElementById('checkButton');
+    const resultsSection = document.getElementById('results');
+    const systemName = document.getElementById('systemName');
+    const systemAddress = document.getElementById('systemAddress');
+    const systemCity = document.getElementById('systemCity');
+    const systemEmail = document.getElementById('systemEmail');
+    const systemPhone = document.getElementById('systemPhone');
+    const chemicalList = document.getElementById('chemicalList');
+    const microbiologyResults = document.getElementById('microbiologyResults');
+    const mitigationList = document.getElementById('mitigationList');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const mitigationPrevBtn = document.getElementById('mitigationPrevBtn');
+    const mitigationNextBtn = document.getElementById('mitigationNextBtn');
+    
+    let waterSystemsData = [];
+    let currentWaterSystemIndex = 0;
+    let currentMitigationIndex = 0;
 
-/**
- * Main function to handle GET requests from the website
- */
-function doGet(e) {
-  try {
-    const zipcode = e.parameter.zipcode;
-    
-    if (!zipcode) {
-      return ContentService
-        .createTextOutput(JSON.stringify({ error: 'ZIP code is required' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    const data = getWaterSystemsByZipcode(zipcode);
-    
-    return ContentService
-      .createTextOutput(JSON.stringify(data))
-      .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch (error) {
-    console.error('Error in doGet:', error);
-    return ContentService
-      .createTextOutput(JSON.stringify({ error: 'Internal server error' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+    // Function to display water system information
+    function displayWaterSystem(system) {
+        systemName.textContent = system.MAILINGNAME;
+        systemAddress.textContent = system.ADDRESS1;
+        systemCity.textContent = system.CITY;
+        systemEmail.textContent = system.EMAIL;
+        systemPhone.textContent = system.PHONE;
 
-/**
- * Function to retrieve water systems data by ZIP code
- */
-function getWaterSystemsByZipcode(zipcode) {
-  try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
-    
-    if (data.length === 0) {
-      return [];
+        // Display chemical violations
+        chemicalList.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+            const chemical = system[`CHEMICAL ${i}`];
+            if (chemical) {
+                const listItem = document.createElement('li');
+                listItem.textContent = chemical;
+                chemicalList.appendChild(listItem);
+            }
+        }
+
+        // Display microbiology results
+        microbiologyResults.textContent = system.MICROBIOLOGY;
+
+        // Display mitigation strategies
+        mitigationList.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+            const mitigation = system[`MITIGATION ${i}`];
+            if (mitigation) {
+                const listItem = document.createElement('li');
+                listItem.textContent = mitigation;
+                mitigationList.appendChild(listItem);
+            }
+        }
     }
-    
-    // Get headers from first row
-    const headers = data[0];
-    
-    // Find the ZIPFIVE column index
-    const zipfiveIndex = headers.indexOf('ZIPFIVE');
-    
-    if (zipfiveIndex === -1) {
-      throw new Error('ZIPFIVE column not found in spreadsheet');
+
+    // Function to handle navigation between water systems
+    function navigateWaterSystems(direction) {
+        currentWaterSystemIndex += direction;
+        displayWaterSystem(waterSystemsData[currentWaterSystemIndex]);
+        updateCarouselButtons();
     }
-    
-    // Filter data by ZIP code and convert to objects
-    const filteredData = [];
-    
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      const rowZipcode = String(row[zipfiveIndex]).trim();
-      
-      if (rowZipcode === zipcode) {
-        const rowObject = {};
+
+    // Function to handle navigation between mitigation strategies
+    function navigateMitigation(direction) {
+        currentMitigationIndex += direction;
+        //displayMitigation(waterSystemsData[currentWaterSystemIndex].mitigations[currentMitigationIndex]);
+        updateCarouselButtons();
+    }
+
+    // Update carousel button states
+    function updateCarouselButtons() {
+        const hasMultipleSystems = waterSystemsData.length > 1;
         
-        // Convert row to object using headers
-        headers.forEach((header, index) => {
-          rowObject[header] = row[index] || '';
-        });
+        // Water systems carousel buttons
+        prevBtn.disabled = currentWaterSystemIndex === 0;
+        nextBtn.disabled = currentWaterSystemIndex === waterSystemsData.length - 1;
+        prevBtn.style.display = hasMultipleSystems ? 'flex' : 'none';
+        nextBtn.style.display = hasMultipleSystems ? 'flex' : 'none';
         
-        filteredData.push(rowObject);
-      }
+        // Mitigation carousel buttons
+        mitigationPrevBtn.disabled = currentMitigationIndex === 0;
+        mitigationNextBtn.disabled = currentMitigationIndex === waterSystemsData.length - 1;
+        mitigationPrevBtn.style.display = hasMultipleSystems ? 'flex' : 'none';
+        mitigationNextBtn.style.display = hasMultipleSystems ? 'flex' : 'none';
+        
+        // Update results title to show current position
+        const resultsTitle = document.querySelector('.results-title');
+        if (hasMultipleSystems) {
+            resultsTitle.textContent = `The following are information for water system(s) in the specified zip code (${currentWaterSystemIndex + 1} of ${waterSystemsData.length})`;
+        } else {
+            resultsTitle.textContent = 'The following are information for water system(s) in the specified zip code';
+        }
     }
-    
-    return filteredData;
-    
-  } catch (error) {
-    console.error('Error in getWaterSystemsByZipcode:', error);
-    throw error;
-  }
-}
 
-/**
- * Function to test the script (for development purposes)
- */
-function testScript() {
-  try {
-    const testZipcode = '32301'; // Replace with a test ZIP code from your data
-    const result = getWaterSystemsByZipcode(testZipcode);
-    console.log('Test result:', result);
-    return result;
-  } catch (error) {
-    console.error('Test failed:', error);
-    return null;
-  }
-}
+    // Event listener for checking water systems
+    checkButton.addEventListener('click', function() {
+        const zipCode = zipCodeInput.value;
+        if (zipCode) {
+            waterSystemsData = generateMockData(zipCode);
+            currentWaterSystemIndex = 0;
+            currentMitigationIndex = 0;
 
-/**
- * Function to get all unique ZIP codes (for debugging)
- */
-function getAllZipcodes() {
-  try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-    const data = sheet.getDataRange().getValues();
-    
-    if (data.length === 0) {
-      return [];
+            if (waterSystemsData.length > 0) {
+                displayWaterSystem(waterSystemsData[currentWaterSystemIndex]);
+                resultsSection.classList.remove('hidden');
+                updateCarouselButtons();
+            } else {
+                alert('No water systems found for this zip code.');
+                resultsSection.classList.add('hidden');
+            }
+        } else {
+            alert('Please enter a zip code.');
+        }
+    });
+
+    // Event listeners for carousel buttons
+    prevBtn.addEventListener('click', () => navigateWaterSystems(-1));
+    nextBtn.addEventListener('click', () => navigateWaterSystems(1));
+    mitigationPrevBtn.addEventListener('click', () => navigateMitigation(-1));
+    mitigationNextBtn.addEventListener('click', () => navigateMitigation(1));
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (resultsSection.classList.contains('hidden')) return;
+        
+        if (e.key === 'ArrowLeft') {
+            if (currentWaterSystemIndex > 0) {
+                navigateWaterSystems(-1);
+            }
+        } else if (e.key === 'ArrowRight') {
+            if (currentWaterSystemIndex < waterSystemsData.length - 1) {
+                navigateWaterSystems(1);
+            }
+        }
+    });
+
+    // Generate mock data for demonstration
+    function generateMockData(zipcode) {
+        const mockSystems = [
+            {
+                MAILINGNAME: "ALTHA, TOWN OF WATER SYSTEM",
+                ADDRESS1: "HIGHWAY 71",
+                CITY: "ALTHA",
+                EMAIL: "townofaltha@yahoo.com",
+                PHONE: "8507623280",
+                ZIPFIVE: zipcode,
+                "CHEMICAL 1": "NITRATE",
+                "CHEMICAL 2": "CHLORINE",
+                "CHEMICAL 3": "",
+                "CHEMICAL 4": "",
+                "CHEMICAL 5": "",
+                "CHEMICAL 6": "",
+                "CHEMICAL 7": "",
+                "CHEMICAL 8": "",
+                "CHEMICAL 9": "",
+                MICROBIOLOGY: "Negative for Total Coliform",
+                "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
+                "MITIGATION 2": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
+                "MITIGATION 3": "",
+                "MITIGATION 4": "",
+                "MITIGATION 5": "",
+                "MITIGATION 6": "",
+                "MITIGATION 7": "",
+                "MITIGATION 8": "",
+                "MITIGATION 9": ""
+            },
+            {
+                MAILINGNAME: "QUINCY WATER TREATMENT FACILITY",
+                ADDRESS1: "123 MAIN STREET",
+                CITY: "QUINCY",
+                EMAIL: "water@quincy.gov",
+                PHONE: "8505551234",
+                ZIPFIVE: zipcode,
+                "CHEMICAL 1": "LEAD",
+                "CHEMICAL 2": "COPPER",
+                "CHEMICAL 3": "FLUORIDE",
+                "CHEMICAL 4": "",
+                "CHEMICAL 5": "",
+                "CHEMICAL 6": "",
+                "CHEMICAL 7": "",
+                "CHEMICAL 8": "",
+                "CHEMICAL 9": "",
+                MICROBIOLOGY: "Positive for E. Coli",
+                "MITIGATION 1": "Use only bottled water until further notice. Contact your healthcare provider if you experience symptoms.",
+                "MITIGATION 2": "Install copper pipe replacement and use cold water for drinking.",
+                "MITIGATION 3": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
+                "MITIGATION 4": "",
+                "MITIGATION 5": "",
+                "MITIGATION 6": "",
+                "MITIGATION 7": "",
+                "MITIGATION 8": "",
+                "MITIGATION 9": ""
+            },
+            {
+                MAILINGNAME: "RIVERSIDE MUNICIPAL WATER DISTRICT",
+                ADDRESS1: "456 WATER STREET",
+                CITY: "RIVERSIDE",
+                EMAIL: "info@riversidewater.com",
+                PHONE: "8505559876",
+                ZIPFIVE: zipcode,
+                "CHEMICAL 1": "ARSENIC",
+                "CHEMICAL 2": "NITRATE",
+                "CHEMICAL 3": "CHLORAMINE",
+                "CHEMICAL 4": "TRIHALOMETHANES",
+                "CHEMICAL 5": "",
+                "CHEMICAL 6": "",
+                "CHEMICAL 7": "",
+                "CHEMICAL 8": "",
+                "CHEMICAL 9": "",
+                MICROBIOLOGY: "Negative for Total Coliform",
+                "MITIGATION 1": "Install arsenic removal filter. Use bottled water for drinking.",
+                "MITIGATION 2": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
+                "MITIGATION 3": "Use activated carbon filter to remove chloramine taste and odor.",
+                "MITIGATION 4": "Install whole house carbon filtration system to reduce trihalomethanes.",
+                "MITIGATION 5": "",
+                "MITIGATION 6": "",
+                "MITIGATION 7": "",
+                "MITIGATION 8": "",
+                "MITIGATION 9": ""
+            }
+        ];
+        
+        return mockSystems;
     }
-    
-    const headers = data[0];
-    const zipfiveIndex = headers.indexOf('ZIPFIVE');
-    
-    if (zipfiveIndex === -1) {
-      return [];
-    }
-    
-    const zipcodes = new Set();
-    
-    for (let i = 1; i < data.length; i++) {
-      const zipcode = String(data[i][zipfiveIndex]).trim();
-      if (zipcode) {
-        zipcodes.add(zipcode);
-      }
-    }
-    
-    return Array.from(zipcodes).sort();
-    
-  } catch (error) {
-    console.error('Error in getAllZipcodes:', error);
-    return [];
-  }
-}
-
-/**
- * Function to validate spreadsheet structure
- */
-function validateSpreadsheetStructure() {
-  try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    
-    const requiredColumns = [
-      'COUNTY', 'EMAIL', 'PWSID', 'MAILINGNAME', 'ADDRESS1', 'ADDRESS2',
-      'CITY', 'ZIPFIVE', 'ZIPFOUR', 'PHONE', 'CHEMICAL 1', 'CHEMICAL 2',
-      'CHEMICAL 3', 'CHEMICAL 4', 'CHEMICAL 5', 'CHEMICAL 6', 'CHEMICAL 7',
-      'CHEMICAL 8', 'CHEMICAL 9', 'MICROBIOLOGY', 'MITIGATION 1', 'MITIGATION 2',
-      'MITIGATION 3', 'MITIGATION 4', 'MITIGATION 5', 'MITIGATION 6',
-      'MITIGATION 7', 'MITIGATION 8', 'MITIGATION 9'
-    ];
-    
-    const missingColumns = requiredColumns.filter(col => !headers.includes(col));
-    
-    if (missingColumns.length > 0) {
-      console.error('Missing columns:', missingColumns);
-      return false;
-    }
-    
-    console.log('Spreadsheet structure is valid');
-    return true;
-    
-  } catch (error) {
-    console.error('Error validating spreadsheet structure:', error);
-    return false;
-  }
-}
-
-/**
- * Function to setup the web app (run this once after deployment)
- */
-function setupWebApp() {
-  console.log('Setting up web app...');
-  
-  // Validate spreadsheet structure
-  if (!validateSpreadsheetStructure()) {
-    console.error('Spreadsheet structure validation failed');
-    return false;
-  }
-  
-  // Test with a sample ZIP code
-  const testResult = testScript();
-  if (testResult) {
-    console.log('Setup completed successfully');
-    return true;
-  } else {
-    console.error('Setup test failed');
-    return false;
-  }
-}
-
-/**
- * Instructions for deployment:
- * 
- * 1. Replace SHEET_ID with your actual Google Sheets ID
- * 2. Replace SHEET_NAME with your actual sheet name
- * 3. Deploy this script as a web app:
- *    - Click "Deploy" > "New deployment"
- *    - Choose "Web app" as the type
- *    - Set execute as "Me"
- *    - Set access to "Anyone"
- *    - Click "Deploy"
- * 4. Copy the web app URL and update the GOOGLE_SCRIPT_URL in script.js
- * 5. Run the setupWebApp() function to validate everything is working
- */
+});
