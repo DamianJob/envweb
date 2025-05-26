@@ -4,8 +4,7 @@ let currentWaterSystemIndex = 0
 let currentMitigationIndex = 0
 
 // Google Apps Script Web App URL - Replace with your actual deployed URL
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx8nABbiKjvfWMKXWG76OYFPfljhkEoGXWFiei1BonJQcxTYBcoZ2ovad9g9qJQKUuU/exec"
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8nABbiKjvfWMKXWG76OYFPfljhkEoGXWFiei1BonJQcxTYBcoZ2ovad9g9qJQKUuU/exec"
 
 // DOM elements
 let zipcodeInput, searchBtn, errorMessage, loading, resultsSection, mitigationSection
@@ -76,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function handleSearch() {
   const zipcode = zipcodeInput.value.trim()
 
-  console.log("=== STARTING NEW SEARCH ===")
+  console.log("=== STARTING SEARCH FOR REAL DATA ===")
   console.log("Searching for zipcode:", zipcode)
 
   if (!validateZipcode(zipcode)) {
@@ -88,38 +87,34 @@ async function handleSearch() {
   hideResults()
 
   try {
-    // Clear previous data first
+    // Clear previous data
     waterSystemsData = []
 
-    // Generate fresh data for this specific zipcode
-    const data = getWaterSystemsByZipcode(zipcode)
-    console.log("=== FRESH DATA GENERATED ===")
+    // Fetch real data from Google Sheets
+    const data = await fetchWaterSystemData(zipcode)
+    console.log("=== RECEIVED DATA FROM GOOGLE SHEETS ===")
     console.log("Zipcode:", zipcode)
-    console.log("Number of systems:", data.length)
-    console.log(
-      "Systems:",
-      data.map((s) => s.MAILINGNAME),
-    )
+    console.log("Number of systems found:", data.length)
+    console.log("Raw data:", data)
 
     if (data && data.length > 0) {
       waterSystemsData = data
       currentWaterSystemIndex = 0
       currentMitigationIndex = 0
 
-      // Small delay to show loading animation
       setTimeout(() => {
         displayResults()
         hideLoading()
       }, 500)
     } else {
-      console.log("No data generated for zipcode:", zipcode)
+      console.log("No data found in Google Sheets for zipcode:", zipcode)
       hideLoading()
-      showError("No water systems found for the specified ZIP code.")
+      showError("No water systems found for the specified ZIP code in our database.")
     }
   } catch (error) {
-    console.error("Error in handleSearch:", error)
+    console.error("Error fetching data from Google Sheets:", error)
     hideLoading()
-    showError("Error retrieving data. Please try again later.")
+    showError("Error connecting to database. Please check your internet connection and try again.")
   }
 }
 
@@ -143,347 +138,48 @@ function validateZipcode(zipcode) {
   return true
 }
 
-// NEW FUNCTION: Get water systems by zipcode with guaranteed different results
-function getWaterSystemsByZipcode(zipcode) {
-  console.log("Getting water systems for zipcode:", zipcode)
+// Fetch data from Google Sheets via Apps Script
+async function fetchWaterSystemData(zipcode) {
+  console.log("Fetching data from Google Sheets for zipcode:", zipcode)
 
-  // Define specific water systems for different zipcodes
-  const waterSystemsMap = {
-    32301: [
-      {
-        MAILINGNAME: "TALLAHASSEE UTILITIES DEPARTMENT",
-        ADDRESS1: "300 S ADAMS STREET",
-        CITY: "TALLAHASSEE",
-        EMAIL: "utilities@talgov.com",
-        PHONE: "8508914968",
-        ZIPFIVE: "32301",
-        "CHEMICAL 1": "CHLORINE",
-        "CHEMICAL 2": "FLUORIDE",
-        "CHEMICAL 3": "",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
-        "MITIGATION 2": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
-        "MITIGATION 3": "",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-      {
-        MAILINGNAME: "LEON COUNTY UTILITIES",
-        ADDRESS1: "1800 COMMONWEALTH BLVD",
-        CITY: "TALLAHASSEE",
-        EMAIL: "utilities@leoncountyfl.gov",
-        PHONE: "8506065100",
-        ZIPFIVE: "32301",
-        "CHEMICAL 1": "MANGANESE",
-        "CHEMICAL 2": "IRON",
-        "CHEMICAL 3": "SULFATE",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Install manganese removal filter to improve water quality.",
-        "MITIGATION 2": "Use iron removal system to reduce metallic taste and staining.",
-        "MITIGATION 3": "Use bottled water if sulfate taste is objectionable.",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
-
-    32321: [
-      {
-        MAILINGNAME: "QUINCY WATER TREATMENT FACILITY",
-        ADDRESS1: "123 MAIN STREET",
-        CITY: "QUINCY",
-        EMAIL: "water@quincy.gov",
-        PHONE: "8505551234",
-        ZIPFIVE: "32321",
-        "CHEMICAL 1": "LEAD",
-        "CHEMICAL 2": "COPPER",
-        "CHEMICAL 3": "FLUORIDE",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Positive for E. Coli",
-        "MITIGATION 1":
-          "Use only bottled water until further notice. Contact your healthcare provider if you experience symptoms.",
-        "MITIGATION 2": "Install copper pipe replacement and use cold water for drinking.",
-        "MITIGATION 3": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-      {
-        MAILINGNAME: "GADSDEN COUNTY WATER AUTHORITY",
-        ADDRESS1: "456 COUNTY ROAD 12",
-        CITY: "QUINCY",
-        EMAIL: "info@gadsdenwater.org",
-        PHONE: "8505559876",
-        ZIPFIVE: "32321",
-        "CHEMICAL 1": "NITRATE",
-        "CHEMICAL 2": "SULFATE",
-        "CHEMICAL 3": "CHLORAMINE",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
-        "MITIGATION 2": "Use bottled water if sulfate taste is objectionable.",
-        "MITIGATION 3": "Use activated carbon filter to remove chloramine taste and odor.",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
-
-    33101: [
-      {
-        MAILINGNAME: "MIAMI-DADE WATER AND SEWER",
-        ADDRESS1: "3071 SW 38TH AVENUE",
-        CITY: "MIAMI",
-        EMAIL: "water@miamidade.gov",
-        PHONE: "3053584000",
-        ZIPFIVE: "33101",
-        "CHEMICAL 1": "ARSENIC",
-        "CHEMICAL 2": "RADIUM",
-        "CHEMICAL 3": "URANIUM",
-        "CHEMICAL 4": "TRIHALOMETHANES",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Install arsenic removal filter. Use bottled water for drinking.",
-        "MITIGATION 2": "Use reverse osmosis system to remove radium contamination.",
-        "MITIGATION 3": "Install uranium removal system. Contact water utility immediately.",
-        "MITIGATION 4": "Install whole house carbon filtration system to reduce trihalomethanes.",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
-
-    32304: [
-      {
-        MAILINGNAME: "FLORIDA STATE UNIVERSITY UTILITIES",
-        ADDRESS1: "600 W COLLEGE AVENUE",
-        CITY: "TALLAHASSEE",
-        EMAIL: "utilities@fsu.edu",
-        PHONE: "8506442761",
-        ZIPFIVE: "32304",
-        "CHEMICAL 1": "CHLORAMINE",
-        "CHEMICAL 2": "TRIHALOMETHANES",
-        "CHEMICAL 3": "BROMATE",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Use activated carbon filter to remove chloramine taste and odor.",
-        "MITIGATION 2": "Install whole house carbon filtration system to reduce trihalomethanes.",
-        "MITIGATION 3": "Use reverse osmosis system to remove bromate contamination.",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
-
-    32307: [
-      {
-        MAILINGNAME: "ALTHA, TOWN OF WATER SYSTEM",
-        ADDRESS1: "HIGHWAY 71",
-        CITY: "ALTHA",
-        EMAIL: "townofaltha@yahoo.com",
-        PHONE: "8507623280",
-        ZIPFIVE: "32307",
-        "CHEMICAL 1": "NITRATE",
-        "CHEMICAL 2": "CHLORINE",
-        "CHEMICAL 3": "",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
-        "MITIGATION 2": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
-        "MITIGATION 3": "",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
-
-    12345: [
-      {
-        MAILINGNAME: "SAMPLE MUNICIPAL WATER DISTRICT",
-        ADDRESS1: "100 WATER STREET",
-        CITY: "SAMPLE CITY",
-        EMAIL: "water@samplecity.gov",
-        PHONE: "5551234567",
-        ZIPFIVE: "12345",
-        "CHEMICAL 1": "CHLORINE",
-        "CHEMICAL 2": "",
-        "CHEMICAL 3": "",
-        "CHEMICAL 4": "",
-        "CHEMICAL 5": "",
-        "CHEMICAL 6": "",
-        "CHEMICAL 7": "",
-        "CHEMICAL 8": "",
-        "CHEMICAL 9": "",
-        MICROBIOLOGY: "Negative for Total Coliform",
-        "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
-        "MITIGATION 2": "",
-        "MITIGATION 3": "",
-        "MITIGATION 4": "",
-        "MITIGATION 5": "",
-        "MITIGATION 6": "",
-        "MITIGATION 7": "",
-        "MITIGATION 8": "",
-        "MITIGATION 9": "",
-      },
-    ],
+  // Check if Google Script URL is configured
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE") {
+    console.error("Google Script URL not configured!")
+    throw new Error("Google Sheets connection not configured. Please set up your Google Apps Script URL.")
   }
 
-  // Check if we have specific data for this zipcode
-  if (waterSystemsMap[zipcode]) {
-    console.log("Found specific systems for zipcode:", zipcode)
-    console.log(
-      "Systems found:",
-      waterSystemsMap[zipcode].map((s) => s.MAILINGNAME),
-    )
-    return waterSystemsMap[zipcode]
-  }
+  try {
+    const url = `${GOOGLE_SCRIPT_URL}?zipcode=${zipcode}`
+    console.log("Making request to:", url)
 
-  // For unknown zipcodes, generate unique systems based on zipcode
-  console.log("Generating unique systems for unknown zipcode:", zipcode)
-  return generateUniqueSystemsForZipcode(zipcode)
-}
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
 
-// Generate unique systems based on zipcode characteristics
-function generateUniqueSystemsForZipcode(zipcode) {
-  // Use zipcode to seed randomness for consistent but different results
-  const seed = Number.parseInt(zipcode)
+    console.log("Response status:", response.status)
+    console.log("Response ok:", response.ok)
 
-  // Different city names based on zipcode
-  const cityOptions = [
-    ["RIVERSIDE", "LAKEWOOD", "GREENVILLE"],
-    ["FAIRVIEW", "OAKWOOD", "HILLSIDE"],
-    ["BROOKSIDE", "MEADOWBROOK", "PINEWOOD"],
-    ["SUNSET", "VALLEY VIEW", "MOUNTAIN VIEW"],
-    ["CLEARWATER", "SPRINGFIELD", "FRANKLIN"],
-  ]
-
-  const chemicalOptions = [
-    ["CHLORINE", "FLUORIDE"],
-    ["NITRATE", "SULFATE"],
-    ["LEAD", "COPPER"],
-    ["IRON", "MANGANESE"],
-    ["ARSENIC", "RADIUM"],
-  ]
-
-  const mitigationOptions = [
-    ["Use bottled water for drinking and cooking.", "Allow tap water to sit for 24 hours before use."],
-    ["Install a reverse osmosis filtration system.", "Use bottled water if taste is objectionable."],
-    [
-      "Install copper pipe replacement and use cold water for drinking.",
-      "Contact your healthcare provider if you experience symptoms.",
-    ],
-    [
-      "Install iron removal filter to improve water quality.",
-      "Use iron removal system to reduce metallic taste and staining.",
-    ],
-    [
-      "Install arsenic removal filter. Use bottled water for drinking.",
-      "Use reverse osmosis system to remove contamination.",
-    ],
-  ]
-
-  // Select options based on zipcode
-  const cityIndex = seed % cityOptions.length
-  const chemicalIndex = seed % chemicalOptions.length
-  const cities = cityOptions[cityIndex]
-  const chemicals = chemicalOptions[chemicalIndex]
-  const mitigations = mitigationOptions[chemicalIndex]
-
-  // Generate 1-3 systems based on zipcode
-  const numSystems = (seed % 3) + 1
-  const systems = []
-
-  for (let i = 0; i < numSystems; i++) {
-    const cityName = cities[i % cities.length]
-    const systemTypes = ["MUNICIPAL WATER SYSTEM", "COUNTY WATER AUTHORITY", "REGIONAL WATER DISTRICT"]
-    const systemType = systemTypes[i % systemTypes.length]
-
-    const system = {
-      MAILINGNAME: `${cityName} ${systemType}`,
-      ADDRESS1: `${((seed + i * 100) % 9999) + 1} ${["MAIN ST", "WATER AVE", "UTILITY BLVD"][i % 3]}`,
-      CITY: cityName,
-      EMAIL: `water@${cityName.toLowerCase().replace(" ", "")}.gov`,
-      PHONE: `${((seed + i) % 900) + 100}555${((seed + i * 10) % 9000) + 1000}`,
-      ZIPFIVE: zipcode,
-      MICROBIOLOGY: (seed + i) % 5 === 0 ? "Positive for Total Coliform" : "Negative for Total Coliform",
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Add chemicals and mitigations based on system index
-    for (let k = 1; k <= 9; k++) {
-      if (k <= chemicals.length && k <= 2) {
-        system[`CHEMICAL ${k}`] = chemicals[k - 1]
-        system[`MITIGATION ${k}`] = mitigations[k - 1]
-      } else {
-        system[`CHEMICAL ${k}`] = ""
-        system[`MITIGATION ${k}`] = ""
-      }
+    const data = await response.json()
+    console.log("Parsed JSON data:", data)
+
+    // Handle different response formats
+    if (data.error) {
+      throw new Error(data.error)
     }
 
-    systems.push(system)
+    // Return the data array
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error("Error in fetchWaterSystemData:", error)
+    throw error
   }
-
-  console.log(
-    "Generated unique systems:",
-    systems.map((s) => s.MAILINGNAME),
-  )
-  return systems
 }
 
 // Display results
@@ -520,7 +216,7 @@ function createWaterSystemCard(system) {
   // Get chemicals present
   const chemicals = []
   for (let i = 1; i <= 9; i++) {
-    const chemical = system[`CHEMICAL ${i}`]
+    const chemical = system[`CHEMICAL ${i}`] || system[`CHEMICAL${i}`] // Handle both formats
     if (chemical && chemical.trim()) {
       chemicals.push(chemical.trim())
     }
@@ -528,23 +224,31 @@ function createWaterSystemCard(system) {
 
   const chemicalsText = chemicals.length > 0 ? chemicals.join(", ") : "None detected"
 
+  // Handle different possible field names from Google Sheets
+  const siteName = system.MAILINGNAME || system.SITENAME || system.NAME || "Unknown System"
+  const address = system.ADDRESS1 || system.ADDRESS || "Address not available"
+  const city = system.CITY || "City not available"
+  const email = system.EMAIL || "Email not available"
+  const phone = system.PHONE || "Phone not available"
+  const microbiology = system.MICROBIOLOGY || "Status not available"
+
   card.innerHTML = `
-        <div class="site-name">SITE NAME: ${system.MAILINGNAME}</div>
+        <div class="site-name">SITE NAME: ${siteName}</div>
         
         <div class="contact-section">
             <div class="contact-title">SITE CONTACT</div>
             <div class="contact-info">
                 <div class="contact-item">
-                    <span class="contact-label">ADDRESS:</span> ${system.ADDRESS1}
+                    <span class="contact-label">ADDRESS:</span> ${address}
                 </div>
                 <div class="contact-item">
-                    <span class="contact-label">CITY:</span> ${system.CITY}
+                    <span class="contact-label">CITY:</span> ${city}
                 </div>
                 <div class="contact-item">
-                    <span class="contact-label">EMAIL:</span> ${system.EMAIL}
+                    <span class="contact-label">EMAIL:</span> ${email}
                 </div>
                 <div class="contact-item">
-                    <span class="contact-label">PHONE NUMBER:</span> ${system.PHONE}
+                    <span class="contact-label">PHONE NUMBER:</span> ${phone}
                 </div>
             </div>
         </div>
@@ -559,7 +263,7 @@ function createWaterSystemCard(system) {
             </div>
             
             <div class="microbiology-status">
-                <strong>MICROBIOLOGY STATUS:</strong> ${system.MICROBIOLOGY}
+                <strong>MICROBIOLOGY STATUS:</strong> ${microbiology}
             </div>
         </div>
         
@@ -596,8 +300,8 @@ function createMitigationCard(system) {
   let mitigationContent = ""
 
   for (let i = 1; i <= 9; i++) {
-    const chemical = system[`CHEMICAL ${i}`]
-    const mitigation = system[`MITIGATION ${i}`]
+    const chemical = system[`CHEMICAL ${i}`] || system[`CHEMICAL${i}`] // Handle both formats
+    const mitigation = system[`MITIGATION ${i}`] || system[`MITIGATION${i}`] // Handle both formats
 
     if (chemical && chemical.trim() && mitigation && mitigation.trim()) {
       mitigationContent += `
@@ -617,8 +321,10 @@ function createMitigationCard(system) {
         `
   }
 
+  const siteName = system.MAILINGNAME || system.SITENAME || system.NAME || "Unknown System"
+
   card.innerHTML = `
-        <div class="mitigation-site-name">"${system.MAILINGNAME}"</div>
+        <div class="mitigation-site-name">"${siteName}"</div>
         ${mitigationContent}
     `
 
@@ -629,7 +335,7 @@ function createMitigationCard(system) {
 function navigateWaterSystems(direction) {
   currentWaterSystemIndex += direction
   currentWaterSystemIndex = Math.max(0, Math.min(currentWaterSystemIndex, waterSystemsData.length - 1))
-  currentMitigationIndex = currentWaterSystemIndex // Keep mitigation in sync
+  currentMitigationIndex = currentWaterSystemIndex
   updateWaterSystemsCarousel()
   updateMitigationCarousel()
   updateCarouselButtons()
@@ -638,7 +344,7 @@ function navigateWaterSystems(direction) {
 function navigateMitigation(direction) {
   currentMitigationIndex += direction
   currentMitigationIndex = Math.max(0, Math.min(currentMitigationIndex, waterSystemsData.length - 1))
-  currentWaterSystemIndex = currentMitigationIndex // Keep water systems in sync
+  currentWaterSystemIndex = currentMitigationIndex
   updateWaterSystemsCarousel()
   updateMitigationCarousel()
   updateCarouselButtons()
@@ -661,7 +367,6 @@ function updateMitigationCarousel() {
 function updateCarouselButtons() {
   const hasMultipleSystems = waterSystemsData.length > 1
 
-  // Water systems carousel buttons
   if (prevBtn) {
     prevBtn.disabled = currentWaterSystemIndex === 0
     prevBtn.style.display = hasMultipleSystems ? "block" : "none"
@@ -671,7 +376,6 @@ function updateCarouselButtons() {
     nextBtn.style.display = hasMultipleSystems ? "block" : "none"
   }
 
-  // Mitigation carousel buttons
   if (mitigationPrevBtn) {
     mitigationPrevBtn.disabled = currentMitigationIndex === 0
     mitigationPrevBtn.style.display = hasMultipleSystems ? "block" : "none"
@@ -681,7 +385,6 @@ function updateCarouselButtons() {
     mitigationNextBtn.style.display = hasMultipleSystems ? "block" : "none"
   }
 
-  // Update results title to show current position
   const resultsTitle = document.querySelector(".results-title")
   if (resultsTitle) {
     if (hasMultipleSystems) {
@@ -723,21 +426,3 @@ function hideError() {
     errorMessage.style.display = "none"
   }
 }
-
-// Function to connect to real Google Sheets (uncomment when ready)
-/*
-async function fetchWaterSystemData(zipcode) {
-  try {
-    const response = await fetch(`${GOOGLE_SCRIPT_URL}?zipcode=${zipcode}`);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching from Google Apps Script:', error);
-    // Fallback to mock data if Google Sheets fails
-    return getWaterSystemsByZipcode(zipcode);
-  }
-}
-*/
