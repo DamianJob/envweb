@@ -89,7 +89,7 @@ async function handleSearch() {
   try {
     // Use mock data for now - this will definitely work
     const data = generateMockData(zipcode)
-    console.log("Generated mock data:", data)
+    console.log("Generated mock data for", zipcode, ":", data)
 
     if (data && data.length > 0) {
       waterSystemsData = data
@@ -134,128 +134,355 @@ function validateZipcode(zipcode) {
   return true
 }
 
-// Generate mock data for demonstration - GUARANTEED TO WORK
+// Generate realistic mock data based on zipcode - FIXED TO RETURN DIFFERENT DATA
 function generateMockData(zipcode) {
   console.log("Generating mock data for zipcode:", zipcode)
 
-  const baseSystems = [
-    {
-      MAILINGNAME: "ALTHA, TOWN OF WATER SYSTEM",
-      ADDRESS1: "HIGHWAY 71",
-      CITY: "ALTHA",
-      EMAIL: "townofaltha@yahoo.com",
-      PHONE: "8507623280",
-      ZIPFIVE: zipcode,
-      "CHEMICAL 1": "NITRATE",
-      "CHEMICAL 2": "CHLORINE",
-      "CHEMICAL 3": "",
-      "CHEMICAL 4": "",
-      "CHEMICAL 5": "",
-      "CHEMICAL 6": "",
-      "CHEMICAL 7": "",
-      "CHEMICAL 8": "",
-      "CHEMICAL 9": "",
-      MICROBIOLOGY: "Negative for Total Coliform",
-      "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
-      "MITIGATION 2": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
-      "MITIGATION 3": "",
-      "MITIGATION 4": "",
-      "MITIGATION 5": "",
-      "MITIGATION 6": "",
-      "MITIGATION 7": "",
-      "MITIGATION 8": "",
-      "MITIGATION 9": "",
-    },
-    {
-      MAILINGNAME: "QUINCY WATER TREATMENT FACILITY",
-      ADDRESS1: "123 MAIN STREET",
-      CITY: "QUINCY",
-      EMAIL: "water@quincy.gov",
-      PHONE: "8505551234",
-      ZIPFIVE: zipcode,
-      "CHEMICAL 1": "LEAD",
-      "CHEMICAL 2": "COPPER",
-      "CHEMICAL 3": "FLUORIDE",
-      "CHEMICAL 4": "",
-      "CHEMICAL 5": "",
-      "CHEMICAL 6": "",
-      "CHEMICAL 7": "",
-      "CHEMICAL 8": "",
-      "CHEMICAL 9": "",
-      MICROBIOLOGY: "Positive for E. Coli",
-      "MITIGATION 1":
-        "Use only bottled water until further notice. Contact your healthcare provider if you experience symptoms.",
-      "MITIGATION 2": "Install copper pipe replacement and use cold water for drinking.",
-      "MITIGATION 3": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
-      "MITIGATION 4": "",
-      "MITIGATION 5": "",
-      "MITIGATION 6": "",
-      "MITIGATION 7": "",
-      "MITIGATION 8": "",
-      "MITIGATION 9": "",
-    },
-    {
-      MAILINGNAME: "RIVERSIDE MUNICIPAL WATER DISTRICT",
-      ADDRESS1: "456 WATER STREET",
-      CITY: "RIVERSIDE",
-      EMAIL: "info@riversidewater.com",
-      PHONE: "8505559876",
-      ZIPFIVE: zipcode,
-      "CHEMICAL 1": "ARSENIC",
-      "CHEMICAL 2": "NITRATE",
-      "CHEMICAL 3": "CHLORAMINE",
-      "CHEMICAL 4": "TRIHALOMETHANES",
-      "CHEMICAL 5": "",
-      "CHEMICAL 6": "",
-      "CHEMICAL 7": "",
-      "CHEMICAL 8": "",
-      "CHEMICAL 9": "",
-      MICROBIOLOGY: "Negative for Total Coliform",
-      "MITIGATION 1": "Install arsenic removal filter. Use bottled water for drinking.",
-      "MITIGATION 2": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
-      "MITIGATION 3": "Use activated carbon filter to remove chloramine taste and odor.",
-      "MITIGATION 4": "Install whole house carbon filtration system to reduce trihalomethanes.",
-      "MITIGATION 5": "",
-      "MITIGATION 6": "",
-      "MITIGATION 7": "",
-      "MITIGATION 8": "",
-      "MITIGATION 9": "",
-    },
-  ]
+  // Create a comprehensive database of water systems by zipcode
+  const waterSystemsDatabase = {
+    // Florida zipcodes with realistic water systems
+    32301: [
+      {
+        MAILINGNAME: "TALLAHASSEE UTILITIES DEPARTMENT",
+        ADDRESS1: "300 S ADAMS STREET",
+        CITY: "TALLAHASSEE",
+        EMAIL: "utilities@talgov.com",
+        PHONE: "8508914968",
+        ZIPFIVE: "32301",
+        "CHEMICAL 1": "CHLORINE",
+        "CHEMICAL 2": "FLUORIDE",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
+        "MITIGATION 2": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+      {
+        MAILINGNAME: "LEON COUNTY UTILITIES",
+        ADDRESS1: "1800 COMMONWEALTH BLVD",
+        CITY: "TALLAHASSEE",
+        EMAIL: "utilities@leoncountyfl.gov",
+        PHONE: "8506065100",
+        ZIPFIVE: "32301",
+        "CHEMICAL 1": "MANGANESE",
+        "CHEMICAL 2": "IRON",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Install manganese removal filter to improve water quality.",
+        "MITIGATION 2": "Use iron removal system to reduce metallic taste and staining.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
 
-  // Add extra systems for specific zipcodes
-  if (zipcode === "32321") {
-    baseSystems.push({
-      MAILINGNAME: "TALLAHASSEE UTILITIES DEPARTMENT",
-      ADDRESS1: "300 S ADAMS STREET",
-      CITY: "TALLAHASSEE",
-      EMAIL: "utilities@talgov.com",
-      PHONE: "8508914968",
-      ZIPFIVE: zipcode,
-      "CHEMICAL 1": "CHLORINE",
-      "CHEMICAL 2": "FLUORIDE",
-      "CHEMICAL 3": "IRON",
-      "CHEMICAL 4": "",
-      "CHEMICAL 5": "",
-      "CHEMICAL 6": "",
-      "CHEMICAL 7": "",
-      "CHEMICAL 8": "",
-      "CHEMICAL 9": "",
-      MICROBIOLOGY: "Negative for Total Coliform",
-      "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
-      "MITIGATION 2": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
-      "MITIGATION 3": "Install iron removal filter to improve taste and reduce staining.",
-      "MITIGATION 4": "",
-      "MITIGATION 5": "",
-      "MITIGATION 6": "",
-      "MITIGATION 7": "",
-      "MITIGATION 8": "",
-      "MITIGATION 9": "",
-    })
+    32321: [
+      {
+        MAILINGNAME: "QUINCY WATER TREATMENT FACILITY",
+        ADDRESS1: "123 MAIN STREET",
+        CITY: "QUINCY",
+        EMAIL: "water@quincy.gov",
+        PHONE: "8505551234",
+        ZIPFIVE: "32321",
+        "CHEMICAL 1": "LEAD",
+        "CHEMICAL 2": "COPPER",
+        "CHEMICAL 3": "FLUORIDE",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Positive for E. Coli",
+        "MITIGATION 1":
+          "Use only bottled water until further notice. Contact your healthcare provider if you experience symptoms.",
+        "MITIGATION 2": "Install copper pipe replacement and use cold water for drinking.",
+        "MITIGATION 3": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+      {
+        MAILINGNAME: "GADSDEN COUNTY WATER AUTHORITY",
+        ADDRESS1: "456 COUNTY ROAD 12",
+        CITY: "QUINCY",
+        EMAIL: "info@gadsdenwater.org",
+        PHONE: "8505559876",
+        ZIPFIVE: "32321",
+        "CHEMICAL 1": "NITRATE",
+        "CHEMICAL 2": "SULFATE",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
+        "MITIGATION 2": "Use bottled water if sulfate taste is objectionable.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
+
+    32304: [
+      {
+        MAILINGNAME: "FLORIDA STATE UNIVERSITY UTILITIES",
+        ADDRESS1: "600 W COLLEGE AVENUE",
+        CITY: "TALLAHASSEE",
+        EMAIL: "utilities@fsu.edu",
+        PHONE: "8506442761",
+        ZIPFIVE: "32304",
+        "CHEMICAL 1": "CHLORAMINE",
+        "CHEMICAL 2": "TRIHALOMETHANES",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Use activated carbon filter to remove chloramine taste and odor.",
+        "MITIGATION 2": "Install whole house carbon filtration system to reduce trihalomethanes.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
+
+    32307: [
+      {
+        MAILINGNAME: "ALTHA, TOWN OF WATER SYSTEM",
+        ADDRESS1: "HIGHWAY 71",
+        CITY: "ALTHA",
+        EMAIL: "townofaltha@yahoo.com",
+        PHONE: "8507623280",
+        ZIPFIVE: "32307",
+        "CHEMICAL 1": "NITRATE",
+        "CHEMICAL 2": "CHLORINE",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Use bottled water for drinking and cooking. Install a reverse osmosis filtration system.",
+        "MITIGATION 2": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
+
+    33101: [
+      {
+        MAILINGNAME: "MIAMI-DADE WATER AND SEWER",
+        ADDRESS1: "3071 SW 38TH AVENUE",
+        CITY: "MIAMI",
+        EMAIL: "water@miamidade.gov",
+        PHONE: "3053584000",
+        ZIPFIVE: "33101",
+        "CHEMICAL 1": "ARSENIC",
+        "CHEMICAL 2": "RADIUM",
+        "CHEMICAL 3": "URANIUM",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Install arsenic removal filter. Use bottled water for drinking.",
+        "MITIGATION 2": "Use reverse osmosis system to remove radium contamination.",
+        "MITIGATION 3": "Install uranium removal system. Contact water utility immediately.",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+      {
+        MAILINGNAME: "BISCAYNE AQUIFER AUTHORITY",
+        ADDRESS1: "1000 BISCAYNE BLVD",
+        CITY: "MIAMI",
+        EMAIL: "info@biscaynewater.org",
+        PHONE: "3055551000",
+        ZIPFIVE: "33101",
+        "CHEMICAL 1": "SODIUM",
+        "CHEMICAL 2": "CHLORIDE",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Use low-sodium diet and consult physician if on sodium-restricted diet.",
+        "MITIGATION 2": "Install water softener to reduce chloride levels.",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
+
+    12345: [
+      {
+        MAILINGNAME: "SAMPLE MUNICIPAL WATER DISTRICT",
+        ADDRESS1: "100 WATER STREET",
+        CITY: "SAMPLE CITY",
+        EMAIL: "water@samplecity.gov",
+        PHONE: "5551234567",
+        ZIPFIVE: "12345",
+        "CHEMICAL 1": "CHLORINE",
+        "CHEMICAL 2": "",
+        "CHEMICAL 3": "",
+        "CHEMICAL 4": "",
+        "CHEMICAL 5": "",
+        "CHEMICAL 6": "",
+        "CHEMICAL 7": "",
+        "CHEMICAL 8": "",
+        "CHEMICAL 9": "",
+        MICROBIOLOGY: "Negative for Total Coliform",
+        "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
+        "MITIGATION 2": "",
+        "MITIGATION 3": "",
+        "MITIGATION 4": "",
+        "MITIGATION 5": "",
+        "MITIGATION 6": "",
+        "MITIGATION 7": "",
+        "MITIGATION 8": "",
+        "MITIGATION 9": "",
+      },
+    ],
   }
 
-  console.log("Generated", baseSystems.length, "systems")
-  return baseSystems
+  // Check if we have specific data for this zipcode
+  if (waterSystemsDatabase[zipcode]) {
+    console.log("Found specific data for zipcode:", zipcode)
+    return waterSystemsDatabase[zipcode]
+  }
+
+  // Generate random data for unknown zipcodes
+  console.log("Generating random data for unknown zipcode:", zipcode)
+  return generateRandomWaterSystem(zipcode)
+}
+
+// Generate random water system data for unknown zipcodes
+function generateRandomWaterSystem(zipcode) {
+  const cityNames = [
+    "RIVERSIDE",
+    "LAKEWOOD",
+    "GREENVILLE",
+    "FAIRVIEW",
+    "OAKWOOD",
+    "HILLSIDE",
+    "BROOKSIDE",
+    "MEADOWBROOK",
+  ]
+  const streetNames = ["MAIN ST", "WATER AVE", "UTILITY BLVD", "MUNICIPAL WAY", "COUNTY RD", "STATE HWY"]
+  const chemicals = ["CHLORINE", "FLUORIDE", "NITRATE", "LEAD", "COPPER", "IRON", "MANGANESE", "ARSENIC", "SULFATE"]
+  const mitigations = [
+    "Use bottled water for drinking and cooking.",
+    "Install a reverse osmosis filtration system.",
+    "Allow tap water to sit for 24 hours before use.",
+    "Use activated carbon filter to improve taste.",
+    "Contact your water utility for current information.",
+    "Install whole house filtration system.",
+    "Use cold water for drinking and cooking.",
+    "Consider professional water testing.",
+  ]
+
+  // Generate 1-3 random systems for this zipcode
+  const numSystems = Math.floor(Math.random() * 3) + 1
+  const systems = []
+
+  for (let i = 0; i < numSystems; i++) {
+    const cityName = cityNames[Math.floor(Math.random() * cityNames.length)]
+    const streetName = streetNames[Math.floor(Math.random() * streetNames.length)]
+    const systemType =
+      i === 0 ? "MUNICIPAL WATER SYSTEM" : i === 1 ? "COUNTY WATER AUTHORITY" : "REGIONAL WATER DISTRICT"
+
+    // Randomly select 0-3 chemicals
+    const numChemicals = Math.floor(Math.random() * 4)
+    const selectedChemicals = []
+    const selectedMitigations = []
+
+    for (let j = 0; j < numChemicals; j++) {
+      const chemical = chemicals[Math.floor(Math.random() * chemicals.length)]
+      if (!selectedChemicals.includes(chemical)) {
+        selectedChemicals.push(chemical)
+        selectedMitigations.push(mitigations[Math.floor(Math.random() * mitigations.length)])
+      }
+    }
+
+    const system = {
+      MAILINGNAME: `${cityName} ${systemType}`,
+      ADDRESS1: `${Math.floor(Math.random() * 9999) + 1} ${streetName}`,
+      CITY: cityName,
+      EMAIL: `water@${cityName.toLowerCase()}.gov`,
+      PHONE: `${Math.floor(Math.random() * 900) + 100}555${Math.floor(Math.random() * 9000) + 1000}`,
+      ZIPFIVE: zipcode,
+      MICROBIOLOGY: Math.random() > 0.8 ? "Positive for Total Coliform" : "Negative for Total Coliform",
+    }
+
+    // Add chemicals and mitigations
+    for (let k = 1; k <= 9; k++) {
+      system[`CHEMICAL ${k}`] = k <= selectedChemicals.length ? selectedChemicals[k - 1] : ""
+      system[`MITIGATION ${k}`] = k <= selectedMitigations.length ? selectedMitigations[k - 1] : ""
+    }
+
+    systems.push(system)
+  }
+
+  return systems
 }
 
 // Display results
