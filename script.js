@@ -4,7 +4,7 @@ let currentWaterSystemIndex = 0;
 let currentMitigationIndex = 0;
 
 // Google Apps Script Web App URL - Replace with your actual deployed URL
-const GOOGLE_SCRIPT_URL = 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8nABbiKjvfWMKXWG76OYFPfljhkEoGXWFiei1BonJQcxTYBcoZ2ovad9g9qJQKUuU/exec';
 
 // DOM elements
 const zipcodeInput = document.getElementById('zipcode');
