@@ -23,7 +23,7 @@ body::before {
     transform: translate(-50%, -50%);
     width: 800px;
     height: 600px;
-    background-image: url('assets/famu-logo.png');
+    background-image: url('https://github.com/DamianJob/envweb/blob/main/Famu%20Logo.png?raw=true');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
