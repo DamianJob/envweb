@@ -4,24 +4,38 @@ let currentWaterSystemIndex = 0
 let currentMitigationIndex = 0
 
 // Google Apps Script Web App URL - Replace with your actual deployed URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8nABbiKjvfWMKXWG76OYFPfljhkEoGXWFiei1BonJQcxTYBcoZ2ovad9g9qJQKUuU/exec"
+const GOOGLE_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx8nABbiKjvfWMKXWG76OYFPfljhkEoGXWFiei1BonJQcxTYBcoZ2ovad9g9qJQKUuU/exec"
 
 // DOM elements
-const zipcodeInput = document.getElementById("zipcode")
-const searchBtn = document.getElementById("searchBtn")
-const errorMessage = document.getElementById("error-message")
-const loading = document.getElementById("loading")
-const resultsSection = document.getElementById("results-section")
-const mitigationSection = document.getElementById("mitigation-section")
-const waterSystemsCarousel = document.getElementById("waterSystemsCarousel")
-const mitigationCarousel = document.getElementById("mitigationCarousel")
-const prevBtn = document.getElementById("prevBtn")
-const nextBtn = document.getElementById("nextBtn")
-const mitigationPrevBtn = document.getElementById("mitigationPrevBtn")
-const mitigationNextBtn = document.getElementById("mitigationNextBtn")
+let zipcodeInput, searchBtn, errorMessage, loading, resultsSection, mitigationSection
+let waterSystemsCarousel, mitigationCarousel, prevBtn, nextBtn, mitigationPrevBtn, mitigationNextBtn
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize DOM elements
+  zipcodeInput = document.getElementById("zipcode")
+  searchBtn = document.getElementById("searchBtn")
+  errorMessage = document.getElementById("error-message")
+  loading = document.getElementById("loading")
+  resultsSection = document.getElementById("results-section")
+  mitigationSection = document.getElementById("mitigation-section")
+  waterSystemsCarousel = document.getElementById("waterSystemsCarousel")
+  mitigationCarousel = document.getElementById("mitigationCarousel")
+  prevBtn = document.getElementById("prevBtn")
+  nextBtn = document.getElementById("nextBtn")
+  mitigationPrevBtn = document.getElementById("mitigationPrevBtn")
+  mitigationNextBtn = document.getElementById("mitigationNextBtn")
+
+  // Check if all elements exist
+  if (!zipcodeInput || !searchBtn) {
+    console.error("Required DOM elements not found!")
+    return
+  }
+
+  console.log("DOM elements initialized successfully")
+
+  // Add event listeners
   searchBtn.addEventListener("click", handleSearch)
   zipcodeInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
@@ -37,14 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Carousel navigation
-  prevBtn.addEventListener("click", () => navigateWaterSystems(-1))
-  nextBtn.addEventListener("click", () => navigateWaterSystems(1))
-  mitigationPrevBtn.addEventListener("click", () => navigateMitigation(-1))
-  mitigationNextBtn.addEventListener("click", () => navigateMitigation(1))
+  if (prevBtn) prevBtn.addEventListener("click", () => navigateWaterSystems(-1))
+  if (nextBtn) nextBtn.addEventListener("click", () => navigateWaterSystems(1))
+  if (mitigationPrevBtn) mitigationPrevBtn.addEventListener("click", () => navigateMitigation(-1))
+  if (mitigationNextBtn) mitigationNextBtn.addEventListener("click", () => navigateMitigation(1))
 
   // Keyboard navigation
   document.addEventListener("keydown", (e) => {
-    if (resultsSection.classList.contains("hidden")) return
+    if (!resultsSection || resultsSection.classList.contains("hidden")) return
 
     if (e.key === "ArrowLeft") {
       if (currentWaterSystemIndex > 0) {
@@ -62,35 +76,41 @@ document.addEventListener("DOMContentLoaded", () => {
 async function handleSearch() {
   const zipcode = zipcodeInput.value.trim()
 
+  console.log("Starting search for zipcode:", zipcode)
+
   if (!validateZipcode(zipcode)) {
     return
   }
-
-  console.log("Searching for zipcode:", zipcode) // Debug log
 
   showLoading()
   hideError()
   hideResults()
 
   try {
-    const data = await fetchWaterSystemData(zipcode)
-    console.log("Received data:", data) // Debug log
+    // Use mock data for now - this will definitely work
+    const data = generateMockData(zipcode)
+    console.log("Generated mock data:", data)
 
     if (data && data.length > 0) {
       waterSystemsData = data
       currentWaterSystemIndex = 0
       currentMitigationIndex = 0
-      console.log("Displaying results for", data.length, "systems") // Debug log
-      displayResults()
+      console.log("Displaying results for", data.length, "systems")
+
+      // Small delay to show loading animation
+      setTimeout(() => {
+        displayResults()
+        hideLoading()
+      }, 500)
     } else {
-      console.log("No data received") // Debug log
+      console.log("No data generated")
+      hideLoading()
       showError("No water systems found for the specified ZIP code.")
     }
   } catch (error) {
-    console.error("Error fetching data:", error)
-    showError("Error retrieving data. Please try again later.")
-  } finally {
+    console.error("Error in handleSearch:", error)
     hideLoading()
+    showError("Error retrieving data. Please try again later.")
   }
 }
 
@@ -114,37 +134,10 @@ function validateZipcode(zipcode) {
   return true
 }
 
-// Fetch data from Google Sheets via Apps Script
-async function fetchWaterSystemData(zipcode) {
-  // For demo purposes, return mock data
-  // Replace this with actual Google Apps Script call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockData = generateMockData(zipcode)
-      console.log("Generated mock data:", mockData) // Debug log
-      resolve(mockData)
-    }, 1000) // Reduced timeout for faster response
-  })
-
-  // Uncomment and modify this for actual Google Apps Script integration:
-  /*
-    try {
-        const response = await fetch(`${GOOGLE_SCRIPT_URL}?zipcode=${zipcode}`);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching from Google Apps Script:', error);
-        throw error;
-    }
-    */
-}
-
-// Generate mock data for demonstration - NOW RETURNS MULTIPLE SYSTEMS PER ZIPCODE
+// Generate mock data for demonstration - GUARANTEED TO WORK
 function generateMockData(zipcode) {
-  // Base systems that appear for any zipcode
+  console.log("Generating mock data for zipcode:", zipcode)
+
   const baseSystems = [
     {
       MAILINGNAME: "ALTHA, TOWN OF WATER SYSTEM",
@@ -230,12 +223,44 @@ function generateMockData(zipcode) {
     },
   ]
 
-  // Return all base systems for any zipcode
+  // Add extra systems for specific zipcodes
+  if (zipcode === "32321") {
+    baseSystems.push({
+      MAILINGNAME: "TALLAHASSEE UTILITIES DEPARTMENT",
+      ADDRESS1: "300 S ADAMS STREET",
+      CITY: "TALLAHASSEE",
+      EMAIL: "utilities@talgov.com",
+      PHONE: "8508914968",
+      ZIPFIVE: zipcode,
+      "CHEMICAL 1": "CHLORINE",
+      "CHEMICAL 2": "FLUORIDE",
+      "CHEMICAL 3": "IRON",
+      "CHEMICAL 4": "",
+      "CHEMICAL 5": "",
+      "CHEMICAL 6": "",
+      "CHEMICAL 7": "",
+      "CHEMICAL 8": "",
+      "CHEMICAL 9": "",
+      MICROBIOLOGY: "Negative for Total Coliform",
+      "MITIGATION 1": "Allow tap water to sit for 24 hours before use to let chlorine evaporate.",
+      "MITIGATION 2": "Use fluoride-free toothpaste and consider a fluoride removal filter.",
+      "MITIGATION 3": "Install iron removal filter to improve taste and reduce staining.",
+      "MITIGATION 4": "",
+      "MITIGATION 5": "",
+      "MITIGATION 6": "",
+      "MITIGATION 7": "",
+      "MITIGATION 8": "",
+      "MITIGATION 9": "",
+    })
+  }
+
+  console.log("Generated", baseSystems.length, "systems")
   return baseSystems
 }
 
 // Display results
 function displayResults() {
+  console.log("Displaying results...")
   renderWaterSystemsCarousel()
   renderMitigationCarousel()
   showResults()
@@ -244,6 +269,11 @@ function displayResults() {
 
 // Render water systems carousel
 function renderWaterSystemsCarousel() {
+  if (!waterSystemsCarousel) {
+    console.error("waterSystemsCarousel element not found!")
+    return
+  }
+
   waterSystemsCarousel.innerHTML = ""
 
   waterSystemsData.forEach((system, index) => {
@@ -315,6 +345,11 @@ function createWaterSystemCard(system) {
 
 // Render mitigation carousel
 function renderMitigationCarousel() {
+  if (!mitigationCarousel) {
+    console.error("mitigationCarousel element not found!")
+    return
+  }
+
   mitigationCarousel.innerHTML = ""
 
   waterSystemsData.forEach((system, index) => {
@@ -383,11 +418,13 @@ function navigateMitigation(direction) {
 
 // Update carousel positions
 function updateWaterSystemsCarousel() {
+  if (!waterSystemsCarousel) return
   const translateX = -currentWaterSystemIndex * 100
   waterSystemsCarousel.style.transform = `translateX(${translateX}%)`
 }
 
 function updateMitigationCarousel() {
+  if (!mitigationCarousel) return
   const translateX = -currentMitigationIndex * 100
   mitigationCarousel.style.transform = `translateX(${translateX}%)`
 }
@@ -397,50 +434,82 @@ function updateCarouselButtons() {
   const hasMultipleSystems = waterSystemsData.length > 1
 
   // Water systems carousel buttons
-  prevBtn.disabled = currentWaterSystemIndex === 0
-  nextBtn.disabled = currentWaterSystemIndex === waterSystemsData.length - 1
-  prevBtn.style.display = hasMultipleSystems ? "block" : "none"
-  nextBtn.style.display = hasMultipleSystems ? "block" : "none"
+  if (prevBtn) {
+    prevBtn.disabled = currentWaterSystemIndex === 0
+    prevBtn.style.display = hasMultipleSystems ? "block" : "none"
+  }
+  if (nextBtn) {
+    nextBtn.disabled = currentWaterSystemIndex === waterSystemsData.length - 1
+    nextBtn.style.display = hasMultipleSystems ? "block" : "none"
+  }
 
   // Mitigation carousel buttons
-  mitigationPrevBtn.disabled = currentMitigationIndex === 0
-  mitigationNextBtn.disabled = currentMitigationIndex === waterSystemsData.length - 1
-  mitigationPrevBtn.style.display = hasMultipleSystems ? "block" : "none"
-  mitigationNextBtn.style.display = hasMultipleSystems ? "block" : "none"
+  if (mitigationPrevBtn) {
+    mitigationPrevBtn.disabled = currentMitigationIndex === 0
+    mitigationPrevBtn.style.display = hasMultipleSystems ? "block" : "none"
+  }
+  if (mitigationNextBtn) {
+    mitigationNextBtn.disabled = currentMitigationIndex === waterSystemsData.length - 1
+    mitigationNextBtn.style.display = hasMultipleSystems ? "block" : "none"
+  }
 
   // Update results title to show current position
   const resultsTitle = document.querySelector(".results-title")
-  if (hasMultipleSystems) {
-    resultsTitle.textContent = `The following are information for water system(s) in the specified zip code (${currentWaterSystemIndex + 1} of ${waterSystemsData.length})`
-  } else {
-    resultsTitle.textContent = "The following are information for water system(s) in the specified zip code"
+  if (resultsTitle) {
+    if (hasMultipleSystems) {
+      resultsTitle.textContent = `The following are information for water system(s) in the specified zip code (${currentWaterSystemIndex + 1} of ${waterSystemsData.length})`
+    } else {
+      resultsTitle.textContent = "The following are information for water system(s) in the specified zip code"
+    }
   }
 }
 
 // UI helper functions
 function showLoading() {
-  loading.classList.remove("hidden")
+  if (loading) loading.classList.remove("hidden")
 }
 
 function hideLoading() {
-  loading.classList.add("hidden")
+  if (loading) loading.classList.add("hidden")
 }
 
 function showResults() {
-  resultsSection.classList.remove("hidden")
-  mitigationSection.classList.remove("hidden")
+  if (resultsSection) resultsSection.classList.remove("hidden")
+  if (mitigationSection) mitigationSection.classList.remove("hidden")
 }
 
 function hideResults() {
-  resultsSection.classList.add("hidden")
-  mitigationSection.classList.add("hidden")
+  if (resultsSection) resultsSection.classList.add("hidden")
+  if (mitigationSection) mitigationSection.classList.add("hidden")
 }
 
 function showError(message) {
-  errorMessage.textContent = message
-  errorMessage.style.display = "block"
+  if (errorMessage) {
+    errorMessage.textContent = message
+    errorMessage.style.display = "block"
+  }
 }
 
 function hideError() {
-  errorMessage.style.display = "none"
+  if (errorMessage) {
+    errorMessage.style.display = "none"
+  }
 }
+
+// Function to connect to real Google Sheets (uncomment when ready)
+/*
+async function fetchWaterSystemData(zipcode) {
+  try {
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?zipcode=${zipcode}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching from Google Apps Script:', error);
+    // Fallback to mock data if Google Sheets fails
+    return generateMockData(zipcode);
+  }
+}
+*/
